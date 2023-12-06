@@ -95,7 +95,13 @@ ui <- navbarPage(
 
 server <- function(input, output, session) {
   
-# Use options = list(searching = FALSE) to remove text box at bottom of data table output
+  combined_cuse_opp_stats <- reactiveVal(combined_cuse_opp_stats)
+  season_performance <- reactiveVal(season_performance)
+  combined_player_stats <- reactiveVal(combined_player_stats)
+  games_season_stats <- reactiveVal(games_season_stats)
+  
+  
+  # Use options = list(searching = FALSE) to remove text box at bottom of data table output
   
   # Observe the submit button for the first tab
   # Use if and else if to set up to render each event display
@@ -117,7 +123,7 @@ server <- function(input, output, session) {
   
   # Observe the submit button for the second tab
   observeEvent(input$submit_team, {
-     table <- combined_cuse_opp_stats %>%
+    table <- combined_cuse_opp_stats() %>%
       # Add in inputs as filters
       filter(`Syracuse/Opponent` == input$team &
                `Home/Away` == input$split &
@@ -126,16 +132,16 @@ server <- function(input, output, session) {
       # Remove filter inputs from the data set
       mutate_if(is.numeric, round, digits = 2) # If the variable is numeric round it 2 digits
     
-     output$team_output <- renderDataTable(
-       table, 
-       options = list(searching = FALSE)
-       # Render the data table
+    output$team_output <- renderDataTable(
+      table, 
+      options = list(searching = FALSE)
+      # Render the data table
     )
   })
   
   # Observe the submit button for tab three
   observeEvent(input$submit_team_pro, {
-    plot <- season_performance %>%
+    plot <- season_performance() %>%
       filter(`Syracuse/Opponent` == input$team_1) %>% # Filter for team input
       ggplot(aes(x = `Game Number`, y = .data[[input$stat_1]])) +
       # Set the y variable to the stat input
@@ -157,7 +163,7 @@ server <- function(input, output, session) {
   # Observe the submit button for tab four
   observeEvent(input$submit_player, {
     
-    table <- combined_player_stats %>%
+    table <- combined_player_stats() %>%
       # Add in inputs as filters
       filter(`Home/Away` == input$split_1 & 
                Conference == input$conf_1) %>%
@@ -173,7 +179,7 @@ server <- function(input, output, session) {
   # Observe the submit button for tab five
   observeEvent(input$submit_player_pro, {
     
-    plot <- games_season_stats %>%
+    plot <- games_season_stats() %>%
       # Filter for the player input
       filter(Player == input$player_1) %>%
       ggplot(aes(x = `Game Number`, y = .data[[input$stat_2]])) +
@@ -187,7 +193,6 @@ server <- function(input, output, session) {
         panel.background = element_rect(fill = "#000E54") 
         # Set the background equal to syracuse blue
       )
-      
     
     output$player_plot <- renderPlot({
       plot # Render plot
